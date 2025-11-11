@@ -221,26 +221,51 @@ app.post('/api/events/:eventId/generate', upload.single('csv_file'), async (req,
 
         // Generate certificate
         const templatePath = path.join(STATIC_DIR, event.template_path);
-        const image = await loadImage(templatePath);
         
-        const canvas = createCanvas(image.width, image.height);
-        const ctx = canvas.getContext('2d');
+        // Load template image
+        const image = await Jimp.read(templatePath);
         
-        // Draw template
-        ctx.drawImage(image, 0, 0);
+        // Parse hex color to RGBA
+        let color = event.font_color;
+        if (color.startsWith('#')) {
+          const hex = color.slice(1);
+          const r = parseInt(hex.substring(0, 2), 16);
+          const g = parseInt(hex.substring(2, 4), 16);
+          const b = parseInt(hex.substring(4, 6), 16);
+          color = Jimp.rgbaToInt(r, g, b, 255);
+        } else {
+          color = Jimp.rgbaToInt(0, 0, 0, 255); // default black
+        }
         
-        // Draw text
-        ctx.font = `bold ${event.font_size}px sans-serif`;
-        ctx.fillStyle = event.font_color;
-        ctx.fillText(name, event.text_position_x, event.text_position_y);
+        // Load font (use Jimp's built-in fonts)
+        let font;
+        if (event.font_size >= 128) {
+          font = await Jimp.loadFont(Jimp.FONT_SANS_128_BLACK);
+        } else if (event.font_size >= 64) {
+          font = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK);
+        } else if (event.font_size >= 32) {
+          font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
+        } else {
+          font = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
+        }
+        
+        // Print text on image
+        image.print(
+          font,
+          event.text_position_x,
+          event.text_position_y,
+          {\n            text: name,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_LEFT,
+            alignmentY: Jimp.VERTICAL_ALIGN_TOP
+          }
+        );
         
         // Save certificate
         const certId = uuidv4();
         const certFilename = `${certId}.png`;
         const certPath = path.join(CERTIFICATES_DIR, certFilename);
         
-        const buffer = canvas.toBuffer('image/png');
-        fs.writeFileSync(certPath, buffer);
+        await image.writeAsync(certPath);
         
         // Save to database
         const certificate = {
