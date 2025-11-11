@@ -70,13 +70,19 @@ export default function DownloadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      <div className="container mx-auto px-4 py-16 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-100 to-rose-100 relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className=\"absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob\"></div>
+        <div className=\"absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000\"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-16 max-w-2xl relative z-10">
         <Button
           data-testid="back-home-btn"
           variant="ghost"
           onClick={() => navigate('/')}
-          className="mb-6 hover:bg-white/50"
+          className="mb-6 hover:bg-white/70 backdrop-blur-sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
@@ -84,22 +90,26 @@ export default function DownloadPage() {
 
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
-            <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-4 rounded-2xl shadow-lg">
-              <Award className="w-16 h-16 text-white" />
+            <div className="bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 p-5 rounded-3xl shadow-2xl animate-float">
+              <Award className="w-20 h-20 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
-            Download Your Certificate
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="w-6 h-6 text-fuchsia-500" />
+            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 bg-clip-text text-transparent">
+              Download Your Certificate
+            </h1>
+            <Sparkles className="w-6 h-6 text-fuchsia-500" />
+          </div>
           {event && (
-            <p className="text-lg text-gray-600">{event.name}</p>
+            <p className="text-2xl text-gray-700 font-semibold">{event.name}</p>
           )}
         </div>
 
-        <Card className="shadow-2xl border-0">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-            <CardTitle className="text-2xl">Enter Your Details</CardTitle>
-            <CardDescription>Please provide the name and email used during registration</CardDescription>
+        <Card className="shadow-2xl border-2 border-fuchsia-300 bg-white/90 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-violet-100 via-fuchsia-100 to-pink-100">
+            <CardTitle className="text-3xl">Enter Your Details</CardTitle>
+            <CardDescription className="text-lg">Please provide the name and email used during registration</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             <div className="space-y-2">
