@@ -139,6 +139,45 @@ export default function DownloadPage() {
               />
             </div>
 
+            <div className="space-y-3">
+              <Label className="text-lg font-semibold">Download Format</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  data-testid="format-png-btn"
+                  onClick={() => setFormat('png')}
+                  className={`p-6 rounded-2xl border-2 transition-all ${
+                    format === 'png'
+                      ? 'border-violet-500 bg-gradient-to-br from-violet-100 to-fuchsia-100 shadow-lg'
+                      : 'border-gray-300 bg-white hover:border-violet-300'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className={`text-4xl mb-2 ${format === 'png' ? 'text-violet-600' : 'text-gray-400'}`}>🖼️</div>
+                    <p className={`font-bold text-lg ${format === 'png' ? 'text-violet-700' : 'text-gray-600'}`}>PNG</p>
+                    <p className="text-sm text-gray-500 mt-1">Image format</p>
+                  </div>
+                </button>
+                
+                <button
+                  type="button"
+                  data-testid="format-pdf-btn"
+                  onClick={() => setFormat('pdf')}
+                  className={`p-6 rounded-2xl border-2 transition-all ${
+                    format === 'pdf'
+                      ? 'border-pink-500 bg-gradient-to-br from-pink-100 to-rose-100 shadow-lg'
+                      : 'border-gray-300 bg-white hover:border-pink-300'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className={`text-4xl mb-2 ${format === 'pdf' ? 'text-pink-600' : 'text-gray-400'}`}>📄</div>
+                    <p className={`font-bold text-lg ${format === 'pdf' ? 'text-pink-700' : 'text-gray-600'}`}>PDF</p>
+                    <p className="text-sm text-gray-500 mt-1">Document format</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             <Button
               data-testid="download-submit-btn"
               onClick={handleDownload}
