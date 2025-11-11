@@ -202,10 +202,10 @@ export default function AdminPage() {
 
           {/* Create Event Tab */}
           <TabsContent value="create">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
-                <CardTitle>Create New Event</CardTitle>
-                <CardDescription>Upload template and configure certificate settings</CardDescription>
+            <Card className="shadow-2xl border-2 border-cyan-200">
+              <CardHeader className="bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100">
+                <CardTitle className="text-2xl">Create New Event</CardTitle>
+                <CardDescription className="text-base">Upload template and configure certificate settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
