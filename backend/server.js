@@ -366,7 +366,7 @@ app.get('/api/events/:eventId/certificates/export', async (req, res) => {
 // Download certificate
 app.post('/api/certificates/download', async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, format = 'png' } = req.body;
     
     if (!name || !email) {
       return res.status(400).json({ error: 'Name and email are required' });
@@ -387,7 +387,42 @@ app.post('/api/certificates/download', async (req, res) => {
       return res.status(404).json({ error: 'Certificate file not found' });
     }
 
-    res.download(certPath, `${certificate.name}_certificate.png`);
+    // If PNG format, send directly
+    if (format === 'png') {
+      res.download(certPath, `${certificate.name}_certificate.png`);
+      return;
+    }
+
+    // If PDF format, convert PNG to PDF
+    if (format === 'pdf') {
+      const image = await Jimp.read(certPath);
+      const imgWidth = image.bitmap.width;
+      const imgHeight = image.bitmap.height;
+      
+      // Create PDF with same dimensions as image
+      const doc = new PDFDocument({
+        size: [imgWidth, imgHeight],
+        margins: { top: 0, bottom: 0, left: 0, right: 0 }
+      });
+      
+      // Set response headers for PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${certificate.name}_certificate.pdf"`);
+      
+      // Pipe PDF to response
+      doc.pipe(res);
+      
+      // Add image to PDF
+      doc.image(certPath, 0, 0, {
+        width: imgWidth,
+        height: imgHeight
+      });
+      
+      doc.end();
+      return;
+    }
+
+    res.status(400).json({ error: 'Invalid format. Use "png" or "pdf"' });
     
   } catch (error) {
     console.error('Error downloading certificate:', error);
