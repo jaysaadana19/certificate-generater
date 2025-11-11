@@ -220,7 +220,7 @@ async def generate_certificates(
                 event_id=event_id,
                 name=name,
                 email=email.lower(),
-                certificate_path=f"/static/certificates/{cert_filename}"
+                certificate_path=f"certificates/{cert_filename}"
             )
             
             doc = cert_obj.model_dump()
