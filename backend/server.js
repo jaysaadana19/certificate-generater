@@ -107,7 +107,7 @@ app.get('/api', (req, res) => {
 });
 
 // Create event
-app.post('/api/events', upload.single('template'), async (req, res) => {
+app.post('/api/events', uploadTemplate.single('template'), async (req, res) => {
   try {
     const { name, text_position_x, text_position_y, font_size = 60, font_color = '#000000' } = req.body;
     
