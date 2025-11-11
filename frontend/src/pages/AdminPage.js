@@ -164,23 +164,33 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            data-testid="back-to-home-btn"
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="mb-4 hover:bg-white/50"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              data-testid="back-to-home-btn"
+              variant="ghost"
+              onClick={() => navigate('/')}
+              className="hover:bg-white/50"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+            <Button
+              data-testid="goto-dashboard-btn"
+              onClick={() => navigate('/dashboard')}
+              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              View Dashboard
+            </Button>
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
             Admin Panel
           </h1>
-          <p className="text-gray-600 mt-2">Create events and generate certificates</p>
+          <p className="text-gray-700 text-lg">Create events and generate certificates</p>
         </div>
 
         <Tabs defaultValue="create" className="space-y-6">
