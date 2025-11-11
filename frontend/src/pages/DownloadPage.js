@@ -45,7 +45,7 @@ export default function DownloadPage() {
     try {
       const response = await axios.post(
         `${API}/certificates/download`,
-        { name, email },
+        { name, email, format },
         { responseType: 'blob' }
       );
 
@@ -53,12 +53,13 @@ export default function DownloadPage() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${name}_certificate.png`);
+      const extension = format === 'pdf' ? 'pdf' : 'png';
+      link.setAttribute('download', `${name}_certificate.${extension}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
 
-      toast.success('Certificate downloaded successfully!');
+      toast.success(`Certificate downloaded as ${extension.toUpperCase()} successfully!`);
     } catch (error) {
       if (error.response?.status === 404) {
         toast.error('Certificate not found. Please check your name and email.');
