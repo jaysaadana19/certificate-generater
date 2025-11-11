@@ -194,10 +194,10 @@ export default function AdminPage() {
         </div>
 
         <Tabs defaultValue="create" className="space-y-6">
-          <TabsList className="bg-white shadow-sm">
-            <TabsTrigger value="create" data-testid="create-event-tab">Create Event</TabsTrigger>
-            <TabsTrigger value="generate" data-testid="generate-certificates-tab">Generate Certificates</TabsTrigger>
-            <TabsTrigger value="view" data-testid="view-certificates-tab">View Certificates</TabsTrigger>
+          <TabsList className="bg-white/80 backdrop-blur-sm shadow-lg border-2 border-cyan-200 p-2">
+            <TabsTrigger value="create" data-testid="create-event-tab" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white">Create Event</TabsTrigger>
+            <TabsTrigger value="generate" data-testid="generate-certificates-tab" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Generate Certificates</TabsTrigger>
+            <TabsTrigger value="view" data-testid="view-certificates-tab" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-teal-500 data-[state=active]:text-white">View Certificates</TabsTrigger>
           </TabsList>
 
           {/* Create Event Tab */}
