@@ -68,7 +68,7 @@ class CertificateGeneratorAPITester:
                     'template': ('sample_certificate.png', template_file, 'image/png')
                 }
                 data = {
-                    'name': 'Test Conference 2025',
+                    'name': 'Test Conference Backend Test',
                     'text_position_x': 400,
                     'text_position_y': 300,
                     'font_size': 60,
