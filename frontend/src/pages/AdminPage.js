@@ -309,9 +309,9 @@ export default function AdminPage() {
                 <Button
                   data-testid="create-event-btn"
                   onClick={handleCreateEvent}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-6 text-lg"
+                  className="w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-700 hover:via-blue-700 hover:to-indigo-700 text-white py-7 text-xl font-semibold shadow-lg hover:shadow-xl"
                 >
-                  <Upload className="w-5 h-5 mr-2" />
+                  <Upload className="w-6 h-6 mr-2" />
                   Create Event
                 </Button>
               </CardContent>
