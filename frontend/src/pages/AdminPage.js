@@ -410,17 +410,17 @@ export default function AdminPage() {
                   {selectedEvent && (
                     <div className="mt-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold">Total Certificates: {certificates.length}</h3>
+                        <h3 className="text-xl font-bold text-gray-800">Total Certificates: {certificates.length}</h3>
                         <Button
                           data-testid="share-link-btn"
-                          variant="outline"
                           onClick={() => {
-                            const link = `${window.location.origin}/download/${selectedEvent.id}`;
+                            const link = `${window.location.origin}/download/${selectedEvent.slug}`;
                             navigator.clipboard.writeText(link);
                             toast.success('Download link copied to clipboard!');
                           }}
+                          className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white"
                         >
-                          <Download className="w-4 h-4 mr-2" />
+                          <Copy className="w-4 h-4 mr-2" />
                           Copy Download Link
                         </Button>
                       </div>
