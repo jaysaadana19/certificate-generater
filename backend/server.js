@@ -254,7 +254,8 @@ app.post('/api/events/:eventId/generate', upload.single('csv_file'), async (req,
           font,
           event.text_position_x,
           event.text_position_y,
-          {\n            text: name,
+          {
+            text: name,
             alignmentX: Jimp.HORIZONTAL_ALIGN_LEFT,
             alignmentY: Jimp.VERTICAL_ALIGN_TOP
           }
