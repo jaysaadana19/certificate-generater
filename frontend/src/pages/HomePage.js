@@ -1,87 +1,116 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Award, Upload, Download } from 'lucide-react';
+import { Award, Upload, Download, BarChart3, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-100 to-pink-100 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-cyan-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="container mx-auto px-4 py-16 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex justify-center mb-6">
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl shadow-lg">
-              <Award className="w-16 h-16 text-white" />
+            <div className="bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 p-5 rounded-3xl shadow-2xl animate-float">
+              <Award className="w-20 h-20 text-white" />
             </div>
           </div>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 bg-clip-text text-transparent mb-4">
             Certificate Generator
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-            Create and distribute beautiful certificates effortlessly
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-fuchsia-500" />
+            <p className="text-xl sm:text-2xl text-gray-700 font-medium">Create and distribute beautiful certificates effortlessly</p>
+            <Sparkles className="w-5 h-5 text-fuchsia-500" />
+          </div>
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-          <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-            <div className="bg-blue-100 w-14 h-14 rounded-2xl flex items-center justify-center mb-4">
-              <Upload className="w-7 h-7 text-blue-600" />
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-violet-200 hover:scale-105 hover:border-violet-400">
+            <div className="bg-gradient-to-br from-blue-400 to-cyan-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <Upload className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-2xl font-bold mb-3 text-gray-800">For Admins</h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 text-base leading-relaxed">
               Upload your certificate template, add recipient list via CSV, and generate certificates in bulk
             </p>
             <Button
               data-testid="admin-panel-btn"
               onClick={() => navigate('/admin')}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl py-7 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
             >
               Go to Admin Panel
             </Button>
           </div>
 
-          <div className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-            <div className="bg-purple-100 w-14 h-14 rounded-2xl flex items-center justify-center mb-4">
-              <Download className="w-7 h-7 text-purple-600" />
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-fuchsia-200 hover:scale-105 hover:border-fuchsia-400">
+            <div className="bg-gradient-to-br from-purple-400 to-fuchsia-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <Download className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-2xl font-bold mb-3 text-gray-800">For Recipients</h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 text-base leading-relaxed">
               Enter your name and email to instantly download your personalized certificate
             </p>
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-800">
-              <p className="font-semibold mb-1">📧 Need your certificate?</p>
-              <p>Check your email or contact the event organizer for your personalized download link</p>
+            <div className="bg-gradient-to-br from-purple-100 to-fuchsia-100 border-2 border-fuchsia-300 rounded-2xl p-5 text-sm">
+              <p className="font-semibold text-fuchsia-800 mb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                Need your certificate?
+              </p>
+              <p className="text-fuchsia-700">Check your email or contact the event organizer for your personalized download link</p>
             </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-pink-200 hover:scale-105 hover:border-pink-400">
+            <div className="bg-gradient-to-br from-orange-400 to-pink-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <BarChart3 className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3 text-gray-800">Dashboard</h3>
+            <p className="text-gray-600 mb-6 text-base leading-relaxed">
+              Track your events, view statistics, and export certificate data with comprehensive insights
+            </p>
+            <Button
+              data-testid="dashboard-btn"
+              onClick={() => navigate('/dashboard')}
+              className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-2xl py-7 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+            >
+              View Dashboard
+            </Button>
           </div>
         </div>
 
         {/* How it works */}
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+        <div className="max-w-5xl mx-auto bg-white/80 backdrop-blur-sm rounded-3xl p-10 shadow-2xl border-2 border-violet-200">
+          <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+              <div className="bg-gradient-to-br from-blue-500 to-cyan-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-2xl shadow-lg">
                 1
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-gray-800">Upload Template</h4>
-              <p className="text-gray-600 text-sm">Upload your certificate design (PNG/JPEG)</p>
+              <h4 className="font-bold text-xl mb-3 text-gray-800">Upload Template</h4>
+              <p className="text-gray-600">Upload your certificate design (PNG/JPEG) and configure text placement</p>
             </div>
             <div className="text-center">
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+              <div className="bg-gradient-to-br from-purple-500 to-fuchsia-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-2xl shadow-lg">
                 2
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-gray-800">Upload CSV</h4>
-              <p className="text-gray-600 text-sm">Add recipient names and emails via CSV file</p>
+              <h4 className="font-bold text-xl mb-3 text-gray-800">Upload CSV</h4>
+              <p className="text-gray-600">Add recipient names and emails via CSV file for bulk processing</p>
             </div>
             <div className="text-center">
-              <div className="bg-gradient-to-br from-pink-500 to-pink-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-xl">
+              <div className="bg-gradient-to-br from-pink-500 to-rose-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-2xl shadow-lg">
                 3
               </div>
-              <h4 className="font-semibold text-lg mb-2 text-gray-800">Generate & Share</h4>
-              <p className="text-gray-600 text-sm">Recipients can download their certificates anytime</p>
+              <h4 className="font-bold text-xl mb-3 text-gray-800">Generate & Share</h4>
+              <p className="text-gray-600">Recipients can download their certificates anytime using the event link</p>
             </div>
           </div>
         </div>
