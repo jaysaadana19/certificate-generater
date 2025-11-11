@@ -17,6 +17,7 @@ export default function DownloadPage() {
   const [event, setEvent] = useState(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [format, setFormat] = useState('png');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
