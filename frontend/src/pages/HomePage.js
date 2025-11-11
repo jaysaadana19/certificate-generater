@@ -51,13 +51,10 @@ export default function HomePage() {
             <p className="text-gray-600 mb-6">
               Enter your name and email to instantly download your personalized certificate
             </p>
-            <Button
-              data-testid="download-certificate-btn"
-              onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl py-6 text-lg font-semibold shadow-md hover:shadow-lg transition-all"
-            >
-              Download Certificate
-            </Button>
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-sm text-purple-800">
+              <p className="font-semibold mb-1">📧 Need your certificate?</p>
+              <p>Check your email or contact the event organizer for your personalized download link</p>
+            </div>
           </div>
         </div>
 
