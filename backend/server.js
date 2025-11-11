@@ -4,7 +4,7 @@ const { MongoClient } = require('mongodb');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const { createCanvas, loadImage, registerFont } = require('canvas');
+const Jimp = require('jimp');
 const csv = require('csv-parser');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
