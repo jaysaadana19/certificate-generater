@@ -266,7 +266,7 @@ async def download_certificate(data: CertificateDownload):
     if not certificate:
         raise HTTPException(status_code=404, detail="Certificate not found")
     
-    cert_path = STATIC_DIR / certificate['certificate_path'].lstrip('/')
+    cert_path = STATIC_DIR / certificate['certificate_path']
     
     if not cert_path.exists():
         raise HTTPException(status_code=404, detail="Certificate file not found")
