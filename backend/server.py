@@ -104,7 +104,7 @@ async def create_event(
     event_obj = Event(
         id=event_id,
         name=name,
-        template_path=f"/static/templates/{template_filename}",
+        template_path=f"templates/{template_filename}",
         text_position_x=text_position_x,
         text_position_y=text_position_y,
         font_size=font_size,
