@@ -5,6 +5,7 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const Jimp = require('jimp');
+const PDFDocument = require('pdfkit');
 const csv = require('csv-parser');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
