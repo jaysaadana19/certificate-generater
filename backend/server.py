@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -15,6 +15,7 @@ import io
 import csv
 from PIL import Image, ImageDraw, ImageFont
 import shutil
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -38,11 +39,19 @@ STATIC_DIR.mkdir(exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+# Helper function to create slug from event name
+def create_slug(name: str) -> str:
+    """Create URL-friendly slug from event name"""
+    slug = re.sub(r'[^\w\s-]', '', name.lower())
+    slug = re.sub(r'[-\s]+', '-', slug)
+    return slug.strip('-')
+
 # Models
 class Event(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    slug: str
     name: str
     template_path: str
     text_position_x: int
@@ -72,6 +81,12 @@ class CertificateDownload(BaseModel):
     name: str
     email: str
 
+class DashboardStats(BaseModel):
+    total_events: int
+    total_certificates: int
+    recent_events: List[dict]
+    certificates_by_event: List[dict]
+
 # Routes
 @api_router.get("/")
 async def root():
@@ -88,6 +103,15 @@ async def create_event(
 ):
     """Create a new event with certificate template"""
     event_id = str(uuid.uuid4())
+    slug = create_slug(name)
+    
+    # Check if slug already exists, append number if needed
+    existing_slug = await db.events.find_one({"slug": slug})
+    if existing_slug:
+        counter = 1
+        while await db.events.find_one({"slug": f"{slug}-{counter}"}):
+            counter += 1
+        slug = f"{slug}-{counter}"
     
     # Save template file
     file_extension = template.filename.split(".")[-1].lower()
@@ -103,6 +127,7 @@ async def create_event(
     # Create event document
     event_obj = Event(
         id=event_id,
+        slug=slug,
         name=name,
         template_path=f"templates/{template_filename}",
         text_position_x=text_position_x,
@@ -127,6 +152,19 @@ async def get_events():
             event['created_at'] = datetime.fromisoformat(event['created_at'])
     
     return events
+
+@api_router.get("/events/slug/{slug}", response_model=Event)
+async def get_event_by_slug(slug: str):
+    """Get a specific event by slug"""
+    event = await db.events.find_one({"slug": slug}, {"_id": 0})
+    
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    if isinstance(event['created_at'], str):
+        event['created_at'] = datetime.fromisoformat(event['created_at'])
+    
+    return event
 
 @api_router.get("/events/{event_id}", response_model=Event)
 async def get_event(event_id: str):
@@ -252,16 +290,51 @@ async def get_event_certificates(event_id: str):
     
     return certificates
 
-@api_router.post("/certificates/download")
-async def download_certificate(data: CertificateDownload):
-    """Download certificate by name and email"""
-    certificate = await db.certificates.find_one(
-        {
-            "name": {"$regex": f"^{data.name}$", "$options": "i"},
-            "email": data.email.lower()
-        },
+@api_router.get("/events/{event_id}/certificates/export")
+async def export_certificates_csv(event_id: str):
+    """Export all certificates for an event as CSV"""
+    certificates = await db.certificates.find(
+        {"event_id": event_id},
         {"_id": 0}
+    ).to_list(10000)
+    
+    if not certificates:
+        raise HTTPException(status_code=404, detail="No certificates found")
+    
+    # Create CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Name', 'Email', 'Generated At', 'Certificate ID'])
+    
+    for cert in certificates:
+        created_at = cert['created_at']
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+        writer.writerow([
+            cert['name'],
+            cert['email'],
+            created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            cert['id']
+        ])
+    
+    output.seek(0)
+    
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=certificates_{event_id}.csv"}
     )
+
+@api_router.post("/certificates/download")
+async def download_certificate(data: CertificateDownload, slug: str = None):
+    """Download certificate by name and email"""
+    # Find by slug if provided, otherwise search all
+    query = {
+        "name": {"$regex": f"^{data.name}$", "$options": "i"},
+        "email": data.email.lower()
+    }
+    
+    certificate = await db.certificates.find_one(query, {"_id": 0})
     
     if not certificate:
         raise HTTPException(status_code=404, detail="Certificate not found")
@@ -275,6 +348,54 @@ async def download_certificate(data: CertificateDownload):
         cert_path,
         media_type="image/png",
         filename=f"{certificate['name']}_certificate.png"
+    )
+
+@api_router.get("/dashboard/stats", response_model=DashboardStats)
+async def get_dashboard_stats():
+    """Get dashboard statistics"""
+    # Total events
+    total_events = await db.events.count_documents({})
+    
+    # Total certificates
+    total_certificates = await db.certificates.count_documents({})
+    
+    # Recent events (last 5)
+    recent_events = await db.events.find(
+        {},
+        {"_id": 0, "name": 1, "slug": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    
+    # Certificates by event
+    pipeline = [
+        {
+            "$group": {
+                "_id": "$event_id",
+                "count": {"$sum": 1}
+            }
+        }
+    ]
+    cert_counts = await db.certificates.aggregate(pipeline).to_list(100)
+    
+    # Enrich with event names
+    certificates_by_event = []
+    for item in cert_counts:
+        event = await db.events.find_one(
+            {"id": item["_id"]},
+            {"_id": 0, "name": 1, "slug": 1}
+        )
+        if event:
+            certificates_by_event.append({
+                "event_id": item["_id"],
+                "event_name": event["name"],
+                "event_slug": event["slug"],
+                "count": item["count"]
+            })
+    
+    return DashboardStats(
+        total_events=total_events,
+        total_certificates=total_certificates,
+        recent_events=recent_events,
+        certificates_by_event=certificates_by_event
     )
 
 # Include the router in the main app
