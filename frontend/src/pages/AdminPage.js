@@ -7,10 +7,19 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Upload, FileText, MousePointer, ArrowLeft, Download } from 'lucide-react';
+import { Upload, FileText, MousePointer, ArrowLeft, Download, BarChart3, Copy } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Load saved form data from localStorage
+const loadFormData = () => {
+  const saved = localStorage.getItem('certificateFormData');
+  return saved ? JSON.parse(saved) : {
+    fontSize: 60,
+    fontColor: '#000000'
+  };
+};
 
 export default function AdminPage() {
   const navigate = useNavigate();
