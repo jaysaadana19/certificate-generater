@@ -6,13 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Download, Award, ArrowLeft } from 'lucide-react';
+import { Download, Award, ArrowLeft, Sparkles } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 export default function DownloadPage() {
-  const { eventId } = useParams();
+  const { eventSlug } = useParams();
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [name, setName] = useState('');
