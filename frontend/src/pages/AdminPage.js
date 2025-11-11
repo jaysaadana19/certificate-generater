@@ -27,14 +27,23 @@ export default function AdminPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [certificates, setCertificates] = useState([]);
   
-  // New event form
+  // New event form with localStorage persistence
+  const savedData = loadFormData();
   const [eventName, setEventName] = useState('');
   const [templateFile, setTemplateFile] = useState(null);
   const [templatePreview, setTemplatePreview] = useState(null);
   const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
-  const [fontSize, setFontSize] = useState(60);
-  const [fontColor, setFontColor] = useState('#000000');
+  const [fontSize, setFontSize] = useState(savedData.fontSize);
+  const [fontColor, setFontColor] = useState(savedData.fontColor);
   const [showPositionPicker, setShowPositionPicker] = useState(false);
+  
+  // Save form data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('certificateFormData', JSON.stringify({
+      fontSize,
+      fontColor
+    }));
+  }, [fontSize, fontColor]);
   
   // CSV upload
   const [csvFile, setCsvFile] = useState(null);
