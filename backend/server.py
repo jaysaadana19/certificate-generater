@@ -182,7 +182,7 @@ async def generate_certificates(
                 continue
             
             # Generate certificate
-            template_path = STATIC_DIR / event['template_path'].lstrip('/')
+            template_path = STATIC_DIR / event['template_path']
             
             # Open template
             img = Image.open(template_path)
