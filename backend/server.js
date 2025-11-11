@@ -31,8 +31,8 @@ app.use(cors({
 app.use(express.json());
 app.use('/static', express.static(STATIC_DIR));
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
+// Configure multer for template uploads
+const templateStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, TEMPLATES_DIR);
   },
@@ -42,14 +42,36 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
-  storage,
+const uploadTemplate = multer({ 
+  storage: templateStorage,
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
       cb(null, true);
     } else {
       cb(new Error('Only PNG and JPEG files are allowed'));
+    }
+  }
+});
+
+// Configure multer for CSV uploads
+const csvStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, '/tmp');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${uuidv4()}.csv`);
+  }
+});
+
+const uploadCSV = multer({ 
+  storage: csvStorage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === '.csv') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV files are allowed'));
     }
   }
 });
