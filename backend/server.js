@@ -198,7 +198,7 @@ app.get('/api/events/:eventId', async (req, res) => {
 });
 
 // Generate certificates
-app.post('/api/events/:eventId/generate', upload.single('csv_file'), async (req, res) => {
+app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (req, res) => {
   try {
     const { eventId } = req.params;
     
