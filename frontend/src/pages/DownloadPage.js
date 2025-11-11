@@ -20,14 +20,14 @@ export default function DownloadPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (eventId) {
+    if (eventSlug) {
       fetchEvent();
     }
-  }, [eventId]);
+  }, [eventSlug]);
 
   const fetchEvent = async () => {
     try {
-      const response = await axios.get(`${API}/events/${eventId}`);
+      const response = await axios.get(`${API}/events/slug/${eventSlug}`);
       setEvent(response.data);
     } catch (error) {
       toast.error('Event not found');
