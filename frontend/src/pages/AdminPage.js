@@ -384,10 +384,10 @@ export default function AdminPage() {
 
           {/* View Certificates Tab */}
           <TabsContent value="view">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-teal-50">
-                <CardTitle>View Generated Certificates</CardTitle>
-                <CardDescription>Browse all generated certificates for selected event</CardDescription>
+            <Card className="shadow-2xl border-2 border-green-200">
+              <CardHeader className="bg-gradient-to-r from-green-100 via-emerald-100 to-teal-100">
+                <CardTitle className="text-2xl">View Generated Certificates</CardTitle>
+                <CardDescription className="text-base">Browse all generated certificates for selected event</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-4">
