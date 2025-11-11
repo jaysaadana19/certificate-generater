@@ -370,10 +370,10 @@ export default function AdminPage() {
                     <Button
                       data-testid="generate-btn"
                       onClick={handleGenerateCertificates}
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-6 text-lg"
+                      className="w-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white py-7 text-xl font-semibold shadow-lg hover:shadow-xl"
                       disabled={!csvFile}
                     >
-                      <FileText className="w-5 h-5 mr-2" />
+                      <FileText className="w-6 h-6 mr-2" />
                       Generate Certificates
                     </Button>
                   </div>
