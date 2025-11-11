@@ -1,0 +1,405 @@
+const express = require('express');
+const cors = require('cors');
+const { MongoClient } = require('mongodb');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const { createCanvas, loadImage, registerFont } = require('canvas');
+const csv = require('csv-parser');
+const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 8001;
+
+// Create directories
+const STATIC_DIR = path.join(__dirname, 'static');
+const TEMPLATES_DIR = path.join(STATIC_DIR, 'templates');
+const CERTIFICATES_DIR = path.join(STATIC_DIR, 'certificates');
+
+[STATIC_DIR, TEMPLATES_DIR, CERTIFICATES_DIR].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Middleware
+app.use(cors({
+  origin: process.env.CORS_ORIGINS?.split(',') || '*',
+  credentials: true
+}));
+app.use(express.json());
+app.use('/static', express.static(STATIC_DIR));
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, TEMPLATES_DIR);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${uuidv4()}_template${ext}`);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === '.png' || ext === '.jpg' || ext === '.jpeg') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PNG and JPEG files are allowed'));
+    }
+  }
+});
+
+// MongoDB connection
+let db;
+const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017';
+const dbName = process.env.DB_NAME || 'test_database';
+
+MongoClient.connect(mongoUrl)
+  .then(client => {
+    console.log('Connected to MongoDB');
+    db = client.db(dbName);
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
+
+// Helper function to create slug
+function createSlug(name) {
+  let slug = name.toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[-\s]+/g, '-')
+    .trim()
+    .replace(/^-+|-+$/g, '');
+  return slug;
+}
+
+// Routes
+app.get('/api', (req, res) => {
+  res.json({ message: 'Certificate Generator API - Node.js' });
+});
+
+// Create event
+app.post('/api/events', upload.single('template'), async (req, res) => {
+  try {
+    const { name, text_position_x, text_position_y, font_size = 60, font_color = '#000000' } = req.body;
+    
+    if (!name || !req.file || !text_position_x || !text_position_y) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const eventId = uuidv4();
+    let slug = createSlug(name);
+    
+    // Check for duplicate slugs
+    const existingSlug = await db.collection('events').findOne({ slug });
+    if (existingSlug) {
+      let counter = 1;
+      while (await db.collection('events').findOne({ slug: `${slug}-${counter}` })) {
+        counter++;
+      }
+      slug = `${slug}-${counter}`;
+    }
+
+    const event = {
+      id: eventId,
+      slug,
+      name,
+      template_path: `templates/${req.file.filename}`,
+      text_position_x: parseInt(text_position_x),
+      text_position_y: parseInt(text_position_y),
+      font_size: parseInt(font_size),
+      font_color,
+      created_at: new Date().toISOString()
+    };
+
+    await db.collection('events').insertOne(event);
+    delete event._id;
+    
+    res.json(event);
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).json({ error: 'Failed to create event' });
+  }
+});
+
+// Get all events
+app.get('/api/events', async (req, res) => {
+  try {
+    const events = await db.collection('events')
+      .find({}, { projection: { _id: 0 } })
+      .toArray();
+    res.json(events);
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    res.status(500).json({ error: 'Failed to fetch events' });
+  }
+});
+
+// Get event by slug
+app.get('/api/events/slug/:slug', async (req, res) => {
+  try {
+    const event = await db.collection('events')
+      .findOne({ slug: req.params.slug }, { projection: { _id: 0 } });
+    
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+    
+    res.json(event);
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    res.status(500).json({ error: 'Failed to fetch event' });
+  }
+});
+
+// Get event by ID
+app.get('/api/events/:eventId', async (req, res) => {
+  try {
+    const event = await db.collection('events')
+      .findOne({ id: req.params.eventId }, { projection: { _id: 0 } });
+    
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+    
+    res.json(event);
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    res.status(500).json({ error: 'Failed to fetch event' });
+  }
+});
+
+// Generate certificates
+app.post('/api/events/:eventId/generate', upload.single('csv_file'), async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    
+    const event = await db.collection('events').findOne({ id: eventId });
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'CSV file is required' });
+    }
+
+    const results = [];
+    const errors = [];
+    
+    // Read CSV
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(req.file.path)
+        .pipe(csv())
+        .on('data', (data) => results.push(data))
+        .on('end', resolve)
+        .on('error', reject);
+    });
+
+    // Delete temp CSV file
+    fs.unlinkSync(req.file.path);
+
+    let generatedCount = 0;
+
+    for (const row of results) {
+      try {
+        const name = row.name?.trim();
+        const email = row.email?.trim().toLowerCase();
+
+        if (!name || !email) continue;
+
+        // Check if certificate already exists
+        const existing = await db.collection('certificates')
+          .findOne({ event_id: eventId, email });
+        
+        if (existing) continue;
+
+        // Generate certificate
+        const templatePath = path.join(STATIC_DIR, event.template_path);
+        const image = await loadImage(templatePath);
+        
+        const canvas = createCanvas(image.width, image.height);
+        const ctx = canvas.getContext('2d');
+        
+        // Draw template
+        ctx.drawImage(image, 0, 0);
+        
+        // Draw text
+        ctx.font = `bold ${event.font_size}px sans-serif`;
+        ctx.fillStyle = event.font_color;
+        ctx.fillText(name, event.text_position_x, event.text_position_y);
+        
+        // Save certificate
+        const certId = uuidv4();
+        const certFilename = `${certId}.png`;
+        const certPath = path.join(CERTIFICATES_DIR, certFilename);
+        
+        const buffer = canvas.toBuffer('image/png');
+        fs.writeFileSync(certPath, buffer);
+        
+        // Save to database
+        const certificate = {
+          id: certId,
+          event_id: eventId,
+          name,
+          email,
+          certificate_path: `certificates/${certFilename}`,
+          created_at: new Date().toISOString()
+        };
+        
+        await db.collection('certificates').insertOne(certificate);
+        generatedCount++;
+        
+      } catch (err) {
+        errors.push(`Error for ${row.name}: ${err.message}`);
+      }
+    }
+
+    res.json({
+      success: true,
+      generated: generatedCount,
+      errors
+    });
+    
+  } catch (error) {
+    console.error('Error generating certificates:', error);
+    res.status(500).json({ error: 'Failed to generate certificates' });
+  }
+});
+
+// Get certificates for event
+app.get('/api/events/:eventId/certificates', async (req, res) => {
+  try {
+    const certificates = await db.collection('certificates')
+      .find({ event_id: req.params.eventId }, { projection: { _id: 0 } })
+      .toArray();
+    
+    res.json(certificates);
+  } catch (error) {
+    console.error('Error fetching certificates:', error);
+    res.status(500).json({ error: 'Failed to fetch certificates' });
+  }
+});
+
+// Export certificates as CSV
+app.get('/api/events/:eventId/certificates/export', async (req, res) => {
+  try {
+    const certificates = await db.collection('certificates')
+      .find({ event_id: req.params.eventId }, { projection: { _id: 0 } })
+      .toArray();
+    
+    if (certificates.length === 0) {
+      return res.status(404).json({ error: 'No certificates found' });
+    }
+
+    // Create CSV
+    let csv = 'Name,Email,Generated At,Certificate ID\n';
+    certificates.forEach(cert => {
+      const date = new Date(cert.created_at).toLocaleString();
+      csv += `"${cert.name}","${cert.email}","${date}","${cert.id}"\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=certificates_${req.params.eventId}.csv`);
+    res.send(csv);
+    
+  } catch (error) {
+    console.error('Error exporting certificates:', error);
+    res.status(500).json({ error: 'Failed to export certificates' });
+  }
+});
+
+// Download certificate
+app.post('/api/certificates/download', async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
+
+    const certificate = await db.collection('certificates').findOne({
+      name: { $regex: new RegExp(`^${name}$`, 'i') },
+      email: email.toLowerCase()
+    }, { projection: { _id: 0 } });
+
+    if (!certificate) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+
+    const certPath = path.join(STATIC_DIR, certificate.certificate_path);
+    
+    if (!fs.existsSync(certPath)) {
+      return res.status(404).json({ error: 'Certificate file not found' });
+    }
+
+    res.download(certPath, `${certificate.name}_certificate.png`);
+    
+  } catch (error) {
+    console.error('Error downloading certificate:', error);
+    res.status(500).json({ error: 'Failed to download certificate' });
+  }
+});
+
+// Dashboard stats
+app.get('/api/dashboard/stats', async (req, res) => {
+  try {
+    const totalEvents = await db.collection('events').countDocuments();
+    const totalCertificates = await db.collection('certificates').countDocuments();
+    
+    const recentEvents = await db.collection('events')
+      .find({}, { projection: { _id: 0, name: 1, slug: 1, created_at: 1 } })
+      .sort({ created_at: -1 })
+      .limit(5)
+      .toArray();
+    
+    // Certificates by event
+    const certCounts = await db.collection('certificates')
+      .aggregate([
+        {
+          $group: {
+            _id: '$event_id',
+            count: { $sum: 1 }
+          }
+        }
+      ])
+      .toArray();
+    
+    const certificatesByEvent = [];
+    for (const item of certCounts) {
+      const event = await db.collection('events')
+        .findOne({ id: item._id }, { projection: { _id: 0, name: 1, slug: 1 } });
+      
+      if (event) {
+        certificatesByEvent.push({
+          event_id: item._id,
+          event_name: event.name,
+          event_slug: event.slug,
+          count: item.count
+        });
+      }
+    }
+
+    res.json({
+      total_events: totalEvents,
+      total_certificates: totalCertificates,
+      recent_events: recentEvents,
+      certificates_by_event: certificatesByEvent
+    });
+    
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+  }
+});
+
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Node.js backend running on port ${PORT}`);
+  console.log(`📁 Static files served from: ${STATIC_DIR}`);
+});
