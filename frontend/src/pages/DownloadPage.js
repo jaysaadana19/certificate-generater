@@ -73,8 +73,8 @@ export default function DownloadPage() {
     <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-100 to-rose-100 relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className=\"absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob\"></div>
-        <div className=\"absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000\"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
       </div>
       
       <div className="container mx-auto px-4 py-16 max-w-2xl relative z-10">
