@@ -320,10 +320,10 @@ export default function AdminPage() {
 
           {/* Generate Certificates Tab */}
           <TabsContent value="generate">
-            <Card className="shadow-lg border-0">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-                <CardTitle>Generate Certificates</CardTitle>
-                <CardDescription>Upload CSV file with names and emails</CardDescription>
+            <Card className="shadow-2xl border-2 border-purple-200">
+              <CardHeader className="bg-gradient-to-r from-purple-100 via-fuchsia-100 to-pink-100">
+                <CardTitle className="text-2xl">Generate Certificates</CardTitle>
+                <CardDescription className="text-base">Upload CSV file with names and emails</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
