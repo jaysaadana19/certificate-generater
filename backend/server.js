@@ -240,7 +240,15 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
     console.log(`Found ${existingEmailSet.size} existing certificates`);
 
     // Load template and fonts once (outside loop for performance)
-    const templatePath = path.join(STATIC_DIR, event.template_path);
+    // Handle both old format (/static/templates/...) and new format (templates/...)
+    let templatePath;
+    if (event.template_path.startsWith('/static/')) {
+      templatePath = path.join(__dirname, event.template_path);
+    } else if (event.template_path.startsWith('static/')) {
+      templatePath = path.join(__dirname, event.template_path);
+    } else {
+      templatePath = path.join(STATIC_DIR, event.template_path);
+    }
     const templateImage = await Jimp.read(templatePath);
     
     // Parse color once
