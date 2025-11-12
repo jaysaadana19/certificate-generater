@@ -272,7 +272,10 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
           font = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
         }
         
-        // Print text on image
+        // Generate certificate ID first
+        const certId = uuidv4();
+        
+        // Print name on image
         image.print(
           font,
           event.text_position_x,
@@ -284,8 +287,25 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
           }
         );
         
+        // Add certificate ID at bottom right corner
+        const smallFont = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
+        const certIdText = `Certificate ID: ${certId}`;
+        const textWidth = Jimp.measureText(smallFont, certIdText);
+        const xPos = image.bitmap.width - textWidth - 30;
+        const yPos = image.bitmap.height - 40;
+        
+        image.print(
+          smallFont,
+          xPos,
+          yPos,
+          {
+            text: certIdText,
+            alignmentX: Jimp.HORIZONTAL_ALIGN_LEFT,
+            alignmentY: Jimp.VERTICAL_ALIGN_TOP
+          }
+        );
+        
         // Save certificate
-        const certId = uuidv4();
         const certFilename = `${certId}.png`;
         const certPath = path.join(CERTIFICATES_DIR, certFilename);
         
