@@ -198,7 +198,7 @@ app.get('/api/events/:eventId', async (req, res) => {
   }
 });
 
-// Generate certificates
+// Generate certificates (optimized for bulk operations)
 app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -212,6 +212,8 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
       return res.status(400).json({ error: 'CSV file is required' });
     }
 
+    console.log(`Starting certificate generation for event: ${event.name}`);
+    
     const results = [];
     const errors = [];
     
@@ -227,57 +229,79 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
     // Delete temp CSV file
     fs.unlinkSync(req.file.path);
 
-    let generatedCount = 0;
+    console.log(`CSV parsed: ${results.length} rows`);
 
-    for (const row of results) {
+    // Get existing certificates for this event (bulk check)
+    const existingEmails = await db.collection('certificates')
+      .find({ event_id: eventId }, { projection: { email: 1 } })
+      .toArray();
+    const existingEmailSet = new Set(existingEmails.map(c => c.email));
+
+    console.log(`Found ${existingEmailSet.size} existing certificates`);
+
+    // Load template and fonts once (outside loop for performance)
+    const templatePath = path.join(STATIC_DIR, event.template_path);
+    const templateImage = await Jimp.read(templatePath);
+    
+    // Parse color once
+    let color = event.font_color;
+    if (color.startsWith('#')) {
+      const hex = color.slice(1);
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      color = Jimp.rgbaToInt(r, g, b, 255);
+    } else {
+      color = Jimp.rgbaToInt(0, 0, 0, 255);
+    }
+    
+    // Load fonts once
+    let mainFont;
+    if (event.font_size >= 128) {
+      mainFont = await Jimp.loadFont(Jimp.FONT_SANS_128_BLACK);
+    } else if (event.font_size >= 64) {
+      mainFont = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK);
+    } else if (event.font_size >= 32) {
+      mainFont = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
+    } else {
+      mainFont = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
+    }
+    const smallFont = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
+
+    console.log('Template and fonts loaded');
+
+    let generatedCount = 0;
+    let skippedCount = 0;
+    const certificatesToInsert = [];
+    const BATCH_SIZE = 100; // Process in batches
+
+    for (let i = 0; i < results.length; i++) {
+      const row = results[i];
+      
       try {
         const name = row.name?.trim();
         const email = row.email?.trim().toLowerCase();
 
-        if (!name || !email) continue;
-
-        // Check if certificate already exists
-        const existing = await db.collection('certificates')
-          .findOne({ event_id: eventId, email });
-        
-        if (existing) continue;
-
-        // Generate certificate
-        const templatePath = path.join(STATIC_DIR, event.template_path);
-        
-        // Load template image
-        const image = await Jimp.read(templatePath);
-        
-        // Parse hex color to RGBA
-        let color = event.font_color;
-        if (color.startsWith('#')) {
-          const hex = color.slice(1);
-          const r = parseInt(hex.substring(0, 2), 16);
-          const g = parseInt(hex.substring(2, 4), 16);
-          const b = parseInt(hex.substring(4, 6), 16);
-          color = Jimp.rgbaToInt(r, g, b, 255);
-        } else {
-          color = Jimp.rgbaToInt(0, 0, 0, 255); // default black
+        if (!name || !email) {
+          errors.push(`Row ${i + 1}: Missing name or email`);
+          continue;
         }
-        
-        // Load font (use Jimp's built-in fonts)
-        let font;
-        if (event.font_size >= 128) {
-          font = await Jimp.loadFont(Jimp.FONT_SANS_128_BLACK);
-        } else if (event.font_size >= 64) {
-          font = await Jimp.loadFont(Jimp.FONT_SANS_64_BLACK);
-        } else if (event.font_size >= 32) {
-          font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
-        } else {
-          font = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
+
+        // Skip if already exists
+        if (existingEmailSet.has(email)) {
+          skippedCount++;
+          continue;
         }
+
+        // Clone template for this certificate
+        const image = templateImage.clone();
         
-        // Generate certificate ID first
+        // Generate certificate ID
         const certId = uuidv4();
         
         // Print name on image
         image.print(
-          font,
+          mainFont,
           event.text_position_x,
           event.text_position_y,
           {
@@ -288,7 +312,6 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
         );
         
         // Add certificate ID at bottom right corner
-        const smallFont = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
         const certIdText = `Certificate ID: ${certId}`;
         const textWidth = Jimp.measureText(smallFont, certIdText);
         const xPos = image.bitmap.width - textWidth - 30;
@@ -311,7 +334,7 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
         
         await image.writeAsync(certPath);
         
-        // Save to database
+        // Prepare certificate document for bulk insert
         const certificate = {
           id: certId,
           event_id: eventId,
@@ -321,13 +344,34 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
           created_at: new Date().toISOString()
         };
         
-        await db.collection('certificates').insertOne(certificate);
+        certificatesToInsert.push(certificate);
         generatedCount++;
+
+        // Bulk insert every BATCH_SIZE certificates
+        if (certificatesToInsert.length >= BATCH_SIZE) {
+          await db.collection('certificates').insertMany(certificatesToInsert);
+          console.log(`Inserted batch: ${certificatesToInsert.length} certificates`);
+          certificatesToInsert.length = 0; // Clear array
+        }
+
+        // Log progress for large batches
+        if ((i + 1) % 100 === 0) {
+          console.log(`Progress: ${i + 1}/${results.length} processed, ${generatedCount} generated`);
+        }
         
       } catch (err) {
-        errors.push(`Error for ${row.name}: ${err.message}`);
+        console.error(`Error processing row ${i + 1}:`, err);
+        errors.push(`Row ${i + 1} (${row.name || 'unknown'}): ${err.message}`);
       }
     }
+
+    // Insert remaining certificates
+    if (certificatesToInsert.length > 0) {
+      await db.collection('certificates').insertMany(certificatesToInsert);
+      console.log(`Inserted final batch: ${certificatesToInsert.length} certificates`);
+    }
+
+    console.log(`Generation complete: ${generatedCount} generated, ${skippedCount} skipped, ${errors.length} errors`);
 
     res.json({
       success: true,
