@@ -450,6 +450,43 @@ app.post('/api/certificates/download', async (req, res) => {
   }
 });
 
+// Verify certificate by ID
+app.get('/api/certificates/verify/:certId', async (req, res) => {
+  try {
+    const { certId } = req.params;
+    
+    const certificate = await db.collection('certificates')
+      .findOne({ id: certId }, { projection: { _id: 0 } });
+    
+    if (!certificate) {
+      return res.status(404).json({ 
+        valid: false,
+        error: 'Certificate not found' 
+      });
+    }
+    
+    // Get event details
+    const event = await db.collection('events')
+      .findOne({ id: certificate.event_id }, { projection: { _id: 0, name: 1, slug: 1 } });
+    
+    res.json({
+      valid: true,
+      certificate: {
+        id: certificate.id,
+        name: certificate.name,
+        email: certificate.email,
+        issued_at: certificate.created_at,
+        event_name: event?.name || 'Unknown Event',
+        event_slug: event?.slug || null
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error verifying certificate:', error);
+    res.status(500).json({ error: 'Failed to verify certificate' });
+  }
+});
+
 // Dashboard stats
 app.get('/api/dashboard/stats', async (req, res) => {
   try {
