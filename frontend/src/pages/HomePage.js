@@ -85,6 +85,23 @@ export default function HomePage() {
               View Dashboard
             </Button>
           </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-emerald-200 hover:scale-105 hover:border-emerald-400">
+            <div className="bg-gradient-to-br from-emerald-400 to-teal-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3 text-gray-800">Verify Certificate</h3>
+            <p className="text-gray-600 mb-6 text-base leading-relaxed">
+              Verify the authenticity of any certificate using its unique certificate ID
+            </p>
+            <Button
+              data-testid="verify-cert-btn"
+              onClick={() => navigate('/verify')}
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl py-7 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+            >
+              Verify Now
+            </Button>
+          </div>
         </div>
 
         {/* How it works */}
