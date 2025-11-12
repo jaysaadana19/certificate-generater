@@ -34,7 +34,7 @@ export default function HomePage() {
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto mb-16">
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-violet-200 hover:scale-105 hover:border-violet-400">
             <div className="bg-gradient-to-br from-blue-400 to-cyan-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
               <Upload className="w-8 h-8 text-white" />
