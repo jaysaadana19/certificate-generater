@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import DashboardPage from './pages/DashboardPage';
 import DownloadPage from './pages/DownloadPage';
+import VerifyPage from './pages/VerifyPage';
 import { Toaster } from '@/components/ui/sonner';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/download/:eventSlug" element={<DownloadPage />} />
+          <Route path="/verify" element={<VerifyPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
