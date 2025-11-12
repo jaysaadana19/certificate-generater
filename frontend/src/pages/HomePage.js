@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Award, Upload, Download, BarChart3, Sparkles } from 'lucide-react';
+import { Award, Upload, Download, BarChart3, Sparkles, Shield } from 'lucide-react';
 
 export default function HomePage() {
   const navigate = useNavigate();
