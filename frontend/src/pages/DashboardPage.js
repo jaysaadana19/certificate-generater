@@ -29,7 +29,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleExportCertificates = async (eventId) => {
+  const handleExportCertificates = async (eventId, eventName) => {
     try {
       const response = await axios.get(
         `${API}/events/${eventId}/certificates/export`,
@@ -39,7 +39,8 @@ export default function DashboardPage() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `certificates_${eventId}.csv`);
+      const fileName = `${eventName.replace(/[^a-z0-9]/gi, '_')}_certificates.csv`;
+      link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -47,6 +48,21 @@ export default function DashboardPage() {
       toast.success('Certificates data exported successfully!');
     } catch (error) {
       toast.error('Failed to export certificates');
+    }
+  };
+
+  const handleDeleteEvent = async (eventId, eventName) => {
+    if (!window.confirm(`Are you sure you want to delete "${eventName}"? This will delete the event, all certificates, and associated files. This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${API}/events/${eventId}`);
+      toast.success(`Event "${eventName}" deleted successfully! ${response.data.certificates_deleted} certificates removed.`);
+      fetchDashboardStats(); // Refresh the dashboard
+    } catch (error) {
+      toast.error('Failed to delete event');
+      console.error('Delete error:', error);
     }
   };
 
