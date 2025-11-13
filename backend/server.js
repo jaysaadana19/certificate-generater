@@ -155,8 +155,11 @@ app.post('/api/events', uploadTemplate.single('template'), async (req, res) => {
 // Get all events
 app.get('/api/events', async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 100; // Default limit 100
     const events = await db.collection('events')
       .find({}, { projection: { _id: 0 } })
+      .sort({ created_at: -1 })
+      .limit(limit)
       .toArray();
     res.json(events);
   } catch (error) {
