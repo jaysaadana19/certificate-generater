@@ -158,6 +158,7 @@ export default function AdminPage() {
     formData.append('text_position_y', textPosition.y);
     formData.append('font_size', fontSize);
     formData.append('font_color', fontColor);
+    formData.append('font_style', fontStyle);
 
     try {
       await axios.post(`${API}/events`, formData, {
@@ -169,6 +170,7 @@ export default function AdminPage() {
       setTemplatePreview(null);
       setTextPosition({ x: 0, y: 0 });
       setShowPositionPicker(false);
+      setSampleName('John Doe');
       fetchEvents();
     } catch (error) {
       toast.error('Failed to create event');
