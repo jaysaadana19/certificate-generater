@@ -231,7 +231,7 @@ app.get('/api/events', checkDbConnection, async (req, res) => {
 });
 
 // Get event by slug
-app.get('/api/events/slug/:slug', async (req, res) => {
+app.get('/api/events/slug/:slug', checkDbConnection, async (req, res) => {
   try {
     const event = await db.collection('events')
       .findOne({ slug: req.params.slug }, { projection: { _id: 0 } });
