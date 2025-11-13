@@ -8,6 +8,7 @@
     "backend"
   ],
   "scripts": {
+    "start": "cd backend && node server.js",
     "install:all": "yarn install && cd frontend && yarn install && cd ../backend && yarn install",
     "start:backend": "cd backend && yarn start",
     "start:frontend": "cd frontend && yarn start",
