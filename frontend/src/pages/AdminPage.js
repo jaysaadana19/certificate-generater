@@ -96,8 +96,38 @@ export default function AdminPage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         setTemplatePreview(e.target.result);
+        setShowPositionPicker(true);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const drawPreview = () => {
+    if (!canvasRef.current || !imageRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const img = imageRef.current;
+    
+    // Set canvas size to match image
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    
+    // Draw template
+    ctx.drawImage(img, 0, 0);
+    
+    // Draw sample text if position is set
+    if (textPosition.x > 0) {
+      ctx.font = `${fontStyle === 'italic' ? 'italic' : fontStyle === 'bold' ? 'bold' : ''} ${fontSize}px Arial`;
+      ctx.fillStyle = fontColor;
+      ctx.textBaseline = 'top';
+      ctx.fillText(sampleName, textPosition.x, textPosition.y);
+      
+      // Draw position marker
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(textPosition.x, textPosition.y, 5, 0, 2 * Math.PI);
+      ctx.fill();
     }
   };
 
