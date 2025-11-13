@@ -316,7 +316,7 @@ app.delete('/api/events/:eventId', checkDbConnection, async (req, res) => {
 });
 
 // Generate certificates (optimized for bulk operations)
-app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (req, res) => {
+app.post('/api/events/:eventId/generate', checkDbConnection, uploadCSV.single('csv_file'), async (req, res) => {
   try {
     const { eventId } = req.params;
     
