@@ -528,7 +528,7 @@ app.get('/api/events/:eventId/certificates', checkDbConnection, async (req, res)
 });
 
 // Export certificates as CSV
-app.get('/api/events/:eventId/certificates/export', async (req, res) => {
+app.get('/api/events/:eventId/certificates/export', checkDbConnection, async (req, res) => {
   try {
     const certificates = await db.collection('certificates')
       .find({ event_id: req.params.eventId }, { projection: { _id: 0 } })
