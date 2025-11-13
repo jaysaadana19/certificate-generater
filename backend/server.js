@@ -138,6 +138,7 @@ app.post('/api/events', uploadTemplate.single('template'), async (req, res) => {
       text_position_y: parseInt(text_position_y),
       font_size: parseInt(font_size),
       font_color,
+      font_style: font_style || 'normal',
       created_at: new Date().toISOString()
     };
 
