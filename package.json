@@ -1,0 +1,27 @@
+{
+  "name": "certificate-generator",
+  "version": "1.0.0",
+  "description": "Certificate Generator - Full Stack Application",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "yarn install && cd frontend && yarn install && cd ../backend && yarn install",
+    "start:backend": "cd backend && yarn start",
+    "start:frontend": "cd frontend && yarn start",
+    "dev": "concurrently \"yarn start:backend\" \"yarn start:frontend\""
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "keywords": [
+    "certificate",
+    "generator",
+    "nodejs",
+    "express",
+    "react"
+  ]
+}
