@@ -660,7 +660,7 @@ app.get('/api/certificates/verify/:certId', checkDbConnection, async (req, res) 
 });
 
 // Dashboard stats
-app.get('/api/dashboard/stats', async (req, res) => {
+app.get('/api/dashboard/stats', checkDbConnection, async (req, res) => {
   try {
     const totalEvents = await db.collection('events').countDocuments();
     const totalCertificates = await db.collection('certificates').countDocuments();
