@@ -110,7 +110,7 @@ app.get('/api', (req, res) => {
 // Create event
 app.post('/api/events', uploadTemplate.single('template'), async (req, res) => {
   try {
-    const { name, text_position_x, text_position_y, font_size = 60, font_color = '#000000' } = req.body;
+    const { name, text_position_x, text_position_y, font_size = 60, font_color = '#000000', font_style = 'normal' } = req.body;
     
     if (!name || !req.file || !text_position_x || !text_position_y) {
       return res.status(400).json({ error: 'Missing required fields' });
