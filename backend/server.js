@@ -608,32 +608,40 @@ app.get('/api/dashboard/stats', async (req, res) => {
       .limit(5)
       .toArray();
     
-    // Certificates by event
-    const certCounts = await db.collection('certificates')
+    // Certificates by event - use aggregation with $lookup to avoid N+1
+    const certificatesByEvent = await db.collection('certificates')
       .aggregate([
         {
           $group: {
             _id: '$event_id',
             count: { $sum: 1 }
           }
+        },
+        {
+          $lookup: {
+            from: 'events',
+            localField: '_id',
+            foreignField: 'id',
+            as: 'event'
+          }
+        },
+        {
+          $unwind: '$event'
+        },
+        {
+          $project: {
+            _id: 0,
+            event_id: '$_id',
+            event_name: '$event.name',
+            event_slug: '$event.slug',
+            count: 1
+          }
+        },
+        {
+          $sort: { count: -1 }
         }
       ])
       .toArray();
-    
-    const certificatesByEvent = [];
-    for (const item of certCounts) {
-      const event = await db.collection('events')
-        .findOne({ id: item._id }, { projection: { _id: 0, name: 1, slug: 1 } });
-      
-      if (event) {
-        certificatesByEvent.push({
-          event_id: item._id,
-          event_name: event.name,
-          event_slug: event.slug,
-          count: item.count
-        });
-      }
-    }
 
     res.json({
       total_events: totalEvents,
