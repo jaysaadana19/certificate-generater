@@ -1,14 +1,31 @@
-#!/usr/bin/env python3
-# This file is a wrapper to start the Python FastAPI server
-# The supervisor config expects server.js, so we use this to launch server.py
+// Wrapper to start Python FastAPI server from Node.js supervisor
+const { spawn } = require('child_process');
+const path = require('path');
 
-import subprocess
-import sys
-import os
+console.log('🔄 Starting FastAPI backend via Node.js wrapper...');
 
-# Change to backend directory
-os.chdir('/app/backend')
+const python = spawn('python3', ['server.py'], {
+    cwd: '/app/backend',
+    stdio: 'inherit'
+});
 
-# Start the FastAPI server
-print("🚀 Starting FastAPI backend server...")
-subprocess.run([sys.executable, 'server.py'])
+python.on('error', (err) => {
+    console.error('❌ Failed to start Python server:', err);
+    process.exit(1);
+});
+
+python.on('exit', (code) => {
+    console.log(`Python server exited with code ${code}`);
+    process.exit(code);
+});
+
+// Handle termination signals
+process.on('SIGTERM', () => {
+    console.log('Received SIGTERM, shutting down...');
+    python.kill('SIGTERM');
+});
+
+process.on('SIGINT', () => {
+    console.log('Received SIGINT, shutting down...');
+    python.kill('SIGINT');
+});
