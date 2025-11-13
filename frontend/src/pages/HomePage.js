@@ -34,73 +34,43 @@ export default function HomePage() {
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto mb-16">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-violet-200 hover:scale-105 hover:border-violet-400">
-            <div className="bg-gradient-to-br from-blue-400 to-cyan-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-              <Upload className="w-8 h-8 text-white" />
+        <div className="grid md:grid-cols-1 gap-8 max-w-2xl mx-auto mb-16">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-10 shadow-2xl hover:shadow-3xl transition-all border-2 border-emerald-200 hover:scale-105 hover:border-emerald-400">
+            <div className="bg-gradient-to-br from-emerald-400 to-teal-500 w-20 h-20 rounded-3xl flex items-center justify-center mb-6 shadow-lg mx-auto">
+              <Shield className="w-10 h-10 text-white" />
             </div>
-            <h3 className="text-2xl font-bold mb-3 text-gray-800">For Admins</h3>
-            <p className="text-gray-600 mb-6 text-base leading-relaxed">
-              Upload your certificate template, add recipient list via CSV, and generate certificates in bulk
-            </p>
-            <Button
-              data-testid="admin-panel-btn"
-              onClick={() => navigate('/admin')}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl py-7 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-            >
-              Go to Admin Panel
-            </Button>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-fuchsia-200 hover:scale-105 hover:border-fuchsia-400">
-            <div className="bg-gradient-to-br from-purple-400 to-fuchsia-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-              <Download className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold mb-3 text-gray-800">For Recipients</h3>
-            <p className="text-gray-600 mb-6 text-base leading-relaxed">
-              Enter your name and email to instantly download your personalized certificate
-            </p>
-            <div className="bg-gradient-to-br from-purple-100 to-fuchsia-100 border-2 border-fuchsia-300 rounded-2xl p-5 text-sm">
-              <p className="font-semibold text-fuchsia-800 mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Need your certificate?
-              </p>
-              <p className="text-fuchsia-700">Check your email or contact the event organizer for your personalized download link</p>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-pink-200 hover:scale-105 hover:border-pink-400">
-            <div className="bg-gradient-to-br from-orange-400 to-pink-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-              <BarChart3 className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold mb-3 text-gray-800">Dashboard</h3>
-            <p className="text-gray-600 mb-6 text-base leading-relaxed">
-              Track your events, view statistics, and export certificate data with comprehensive insights
-            </p>
-            <Button
-              data-testid="dashboard-btn"
-              onClick={() => navigate('/dashboard')}
-              className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-2xl py-7 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-            >
-              View Dashboard
-            </Button>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border-2 border-emerald-200 hover:scale-105 hover:border-emerald-400">
-            <div className="bg-gradient-to-br from-emerald-400 to-teal-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold mb-3 text-gray-800">Verify Certificate</h3>
-            <p className="text-gray-600 mb-6 text-base leading-relaxed">
+            <h3 className="text-3xl font-bold mb-4 text-gray-800 text-center">Verify Certificate</h3>
+            <p className="text-gray-600 mb-8 text-lg leading-relaxed text-center">
               Verify the authenticity of any certificate using its unique certificate ID
             </p>
             <Button
               data-testid="verify-cert-btn"
               onClick={() => navigate('/verify')}
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl py-7 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl py-8 text-xl font-bold shadow-lg hover:shadow-xl transition-all"
             >
-              Verify Now
+              Verify Certificate Now
             </Button>
+          </div>
+        </div>
+
+        {/* Info for Recipients */}
+        <div className="max-w-2xl mx-auto mb-16">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border-2 border-fuchsia-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-gradient-to-br from-purple-400 to-fuchsia-500 w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">
+                <Download className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800">For Certificate Recipients</h3>
+            </div>
+            <div className="bg-gradient-to-br from-purple-100 to-fuchsia-100 border-2 border-fuchsia-300 rounded-2xl p-6">
+              <p className="font-semibold text-fuchsia-800 mb-3 flex items-center gap-2 text-lg">
+                <Sparkles className="w-5 h-5" />
+                Need your certificate?
+              </p>
+              <p className="text-fuchsia-700 text-base leading-relaxed">
+                Check your email for a personalized download link from the event organizer. You can use that link to download your certificate in PNG or PDF format anytime.
+              </p>
+            </div>
           </div>
         </div>
 
