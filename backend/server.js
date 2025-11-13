@@ -119,11 +119,19 @@ app.post('/api/events', uploadTemplate.single('template'), async (req, res) => {
     const eventId = uuidv4();
     let slug = createSlug(name);
     
-    // Check for duplicate slugs
-    const existingSlug = await db.collection('events').findOne({ slug });
-    if (existingSlug) {
+    // Check for duplicate slugs - fetch all matching slugs at once
+    const existingSlugs = await db.collection('events')
+      .find(
+        { slug: { $regex: `^${slug}(-\\d+)?$` } },
+        { projection: { slug: 1 } }
+      )
+      .toArray();
+    
+    if (existingSlugs.length > 0) {
+      // Find the highest counter
+      const slugSet = new Set(existingSlugs.map(e => e.slug));
       let counter = 1;
-      while (await db.collection('events').findOne({ slug: `${slug}-${counter}` })) {
+      while (slugSet.has(`${slug}-${counter}`)) {
         counter++;
       }
       slug = `${slug}-${counter}`;
