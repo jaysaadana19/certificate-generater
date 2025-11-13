@@ -199,6 +199,56 @@ app.get('/api/events/:eventId', async (req, res) => {
   }
 });
 
+// Delete event
+app.delete('/api/events/:eventId', async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    
+    // Get event first
+    const event = await db.collection('events').findOne({ id: eventId });
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+    
+    // Delete template file
+    const templatePath = path.join(STATIC_DIR, event.template_path);
+    if (fs.existsSync(templatePath)) {
+      fs.unlinkSync(templatePath);
+    }
+    
+    // Get all certificates for this event
+    const certificates = await db.collection('certificates')
+      .find({ event_id: eventId })
+      .toArray();
+    
+    // Delete certificate files
+    for (const cert of certificates) {
+      const certPath = path.join(STATIC_DIR, cert.certificate_path);
+      if (fs.existsSync(certPath)) {
+        fs.unlinkSync(certPath);
+      }
+    }
+    
+    // Delete certificates from database
+    await db.collection('certificates').deleteMany({ event_id: eventId });
+    
+    // Delete event from database
+    await db.collection('events').deleteOne({ id: eventId });
+    
+    console.log(`Deleted event ${eventId} and ${certificates.length} certificates`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Event deleted successfully',
+      certificates_deleted: certificates.length
+    });
+    
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    res.status(500).json({ error: 'Failed to delete event' });
+  }
+});
+
 // Generate certificates (optimized for bulk operations)
 app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (req, res) => {
   try {
