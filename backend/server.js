@@ -720,7 +720,18 @@ app.get('/api/dashboard/stats', checkDbConnection, async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Node.js backend running on port ${PORT}`);
   console.log(`📁 Static files served from: ${STATIC_DIR}`);
+  console.log(`✅ Server ready and listening`);
+  console.log(`🔗 Health check available at: http://0.0.0.0:${PORT}/api/health`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  console.error('❌ Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  }
+  process.exit(1);
 });
