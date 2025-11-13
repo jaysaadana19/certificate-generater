@@ -1,12 +1,15 @@
 // Wrapper to start Python FastAPI server from Node.js supervisor
 const { spawn } = require('child_process');
-const path = require('path');
 
 console.log('🔄 Starting FastAPI backend via Node.js wrapper...');
 
-const python = spawn('python3', ['server.py'], {
+// Use the virtual environment Python
+const pythonPath = '/root/.venv/bin/python3';
+
+const python = spawn(pythonPath, ['server.py'], {
     cwd: '/app/backend',
-    stdio: 'inherit'
+    stdio: 'inherit',
+    env: { ...process.env, PYTHONUNBUFFERED: '1' }
 });
 
 python.on('error', (err) => {
@@ -16,7 +19,7 @@ python.on('error', (err) => {
 
 python.on('exit', (code) => {
     console.log(`Python server exited with code ${code}`);
-    process.exit(code);
+    process.exit(code || 0);
 });
 
 // Handle termination signals
