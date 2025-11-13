@@ -162,7 +162,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Create event
-app.post('/api/events', uploadTemplate.single('template'), async (req, res) => {
+app.post('/api/events', checkDbConnection, uploadTemplate.single('template'), async (req, res) => {
   try {
     const { name, text_position_x, text_position_y, font_size = 60, font_color = '#000000', font_style = 'normal' } = req.body;
     
