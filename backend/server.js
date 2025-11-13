@@ -511,7 +511,7 @@ app.post('/api/events/:eventId/generate', checkDbConnection, uploadCSV.single('c
 });
 
 // Get certificates for event
-app.get('/api/events/:eventId/certificates', async (req, res) => {
+app.get('/api/events/:eventId/certificates', checkDbConnection, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 1000; // Default limit 1000
     const certificates = await db.collection('certificates')
