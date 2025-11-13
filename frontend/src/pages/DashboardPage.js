@@ -177,20 +177,48 @@ export default function DashboardPage() {
             <CardContent className="pt-6">
               {stats?.recent_events?.length > 0 ? (
                 <div className="space-y-3">
-                  {stats.recent_events.map((event, index) => (
-                    <div
-                      key={index}
-                      className="bg-gradient-to-r from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200 hover:shadow-md transition-all"
-                    >
-                      <h4 className="font-semibold text-gray-800 mb-1">{event.name}</h4>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-violet-600 font-mono">/{event.slug}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(event.created_at).toLocaleDateString()}
+                  {stats.recent_events.map((event, index) => {
+                    const eventWithCerts = stats.certificates_by_event?.find(e => e.event_slug === event.slug);
+                    return (
+                      <div
+                        key={index}
+                        className="bg-gradient-to-r from-violet-50 to-purple-50 p-4 rounded-xl border border-violet-200 hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-gray-800 text-lg">{event.name}</h4>
+                          {eventWithCerts && (
+                            <span className="bg-violet-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                              {eventWithCerts.count} certs
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-violet-600 font-mono mb-1">/{event.slug}</p>
+                        <p className="text-xs text-gray-500 mb-3">
+                          Created: {new Date(event.created_at).toLocaleDateString()}
                         </p>
+                        {eventWithCerts && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleExportCertificates(eventWithCerts.event_id, event.name)}
+                              className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white text-xs"
+                            >
+                              <Download className="w-3 h-3 mr-1" />
+                              CSV
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteEvent(eventWithCerts.event_id, event.name)}
+                              className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-gray-500 text-center py-8">No events yet</p>
