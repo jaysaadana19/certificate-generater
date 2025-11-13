@@ -16,7 +16,7 @@ The application is fully functional and deployment-ready. All critical requireme
   - CORS_ORIGINS: `*`
 
 - ✅ **Frontend .env exists** - `/app/frontend/.env`
-  - REACT_APP_BACKEND_URL: `https://credential-forge.preview.emergentagent.com`
+  - REACT_APP_BACKEND_URL: `https://certmaker-6.preview.emergentagent.com`
 
 ### 2. No Hardcoded Values
 - ✅ All URLs use environment variables
@@ -315,4 +315,4 @@ The warnings from the deployment agent are optimization suggestions for future s
 
 **Last Updated:** 2025-11-13
 
-**Application URL:** https://credential-forge.preview.emergentagent.com
+**Application URL:** https://certmaker-6.preview.emergentagent.com

@@ -7,7 +7,7 @@ These links are **NOT visible on the public homepage** but are fully functional 
 ---
 
 ### 📊 **Admin Dashboard**
-**URL:** `https://credential-forge.preview.emergentagent.com/dashboard`
+**URL:** `https://certmaker-6.preview.emergentagent.com/dashboard`
 
 **What you can do:**
 - View total events and certificates statistics
@@ -27,7 +27,7 @@ These links are **NOT visible on the public homepage** but are fully functional 
 ---
 
 ### ⚙️ **Admin Panel** 
-**URL:** `https://credential-forge.preview.emergentagent.com/admin`
+**URL:** `https://certmaker-6.preview.emergentagent.com/admin`
 
 **What you can do:**
 
@@ -60,13 +60,13 @@ These links are **NOT visible on the public homepage** but are fully functional 
 ## 🌐 Public URLs (Visible on Homepage)
 
 ### Verify Certificate
-**URL:** `https://credential-forge.preview.emergentagent.com/verify`
+**URL:** `https://certmaker-6.preview.emergentagent.com/verify`
 - Public verification page
 - Anyone can verify certificates using certificate ID
 - Shows certificate details if valid
 
 ### Homepage
-**URL:** `https://credential-forge.preview.emergentagent.com/`
+**URL:** `https://certmaker-6.preview.emergentagent.com/`
 - Public landing page
 - Only shows "Verify Certificate" feature
 - Admin/Dashboard links removed from public view
@@ -116,7 +116,7 @@ All admin pages are responsive and work on:
 
 ### Creating and Distributing Certificates:
 
-1. **Go to Admin Panel**: `https://credential-forge.preview.emergentagent.com/admin`
+1. **Go to Admin Panel**: `https://certmaker-6.preview.emergentagent.com/admin`
 
 2. **Create Event** (Tab 1):
    - Upload template
