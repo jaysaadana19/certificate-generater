@@ -450,8 +450,11 @@ app.post('/api/events/:eventId/generate', uploadCSV.single('csv_file'), async (r
 // Get certificates for event
 app.get('/api/events/:eventId/certificates', async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 1000; // Default limit 1000
     const certificates = await db.collection('certificates')
       .find({ event_id: req.params.eventId }, { projection: { _id: 0 } })
+      .sort({ created_at: -1 })
+      .limit(limit)
       .toArray();
     
     res.json(certificates);
