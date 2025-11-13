@@ -556,7 +556,7 @@ app.get('/api/events/:eventId/certificates/export', checkDbConnection, async (re
 });
 
 // Download certificate
-app.post('/api/certificates/download', async (req, res) => {
+app.post('/api/certificates/download', checkDbConnection, async (req, res) => {
   try {
     const { name, email, format = 'png' } = req.body;
     
