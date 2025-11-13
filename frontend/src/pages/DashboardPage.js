@@ -215,23 +215,31 @@ export default function DashboardPage() {
                       key={index}
                       className="bg-gradient-to-r from-pink-50 to-rose-50 p-4 rounded-xl border border-pink-200 hover:shadow-md transition-all"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-800">{item.event_name}</h4>
-                        <span className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                          {item.count}
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-gray-800 text-lg">{item.event_name}</h4>
+                        <span className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                          {item.count} certs
                         </span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-pink-600 font-mono">/{item.event_slug}</p>
+                      <p className="text-sm text-pink-600 font-mono mb-3">/{item.event_slug}</p>
+                      <div className="flex items-center gap-2">
                         <Button
                           data-testid={`export-event-${index}-btn`}
                           size="sm"
-                          variant="outline"
-                          onClick={() => handleExportCertificates(item.event_id)}
-                          className="text-xs hover:bg-pink-50"
+                          onClick={() => handleExportCertificates(item.event_id, item.event_name)}
+                          className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                         >
-                          <Download className="w-3 h-3 mr-1" />
-                          Export CSV
+                          <Download className="w-4 h-4 mr-1" />
+                          Download CSV
+                        </Button>
+                        <Button
+                          data-testid={`delete-event-${index}-btn`}
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteEvent(item.event_id, item.event_name)}
+                          className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
