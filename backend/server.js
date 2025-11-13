@@ -215,7 +215,7 @@ app.post('/api/events', checkDbConnection, uploadTemplate.single('template'), as
 });
 
 // Get all events
-app.get('/api/events', async (req, res) => {
+app.get('/api/events', checkDbConnection, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 100; // Default limit 100
     const events = await db.collection('events')
