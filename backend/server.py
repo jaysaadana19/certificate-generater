@@ -249,6 +249,293 @@ async def delete_event(event_id: str, database = Depends(get_db)):
         print(f"Error deleting event: {e}")
         raise HTTPException(status_code=500, detail="Failed to delete event")
 
+# Generate certificates endpoint
+@app.post("/api/events/{event_id}/generate")
+async def generate_certificates(
+    event_id: str,
+    csv_file: UploadFile = File(...),
+    database = Depends(get_db)
+):
+    try:
+        # Get event
+        event = database.events.find_one({"id": event_id}, {"_id": 0})
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        
+        # Read and parse CSV
+        content = await csv_file.read()
+        csv_content = content.decode('utf-8').splitlines()
+        csv_reader = csv.DictReader(csv_content)
+        
+        # Get existing emails to avoid duplicates
+        existing_emails = set()
+        for cert in database.certificates.find({"event_id": event_id}, {"email": 1}):
+            existing_emails.add(cert.get("email", "").lower())
+        
+        # Load template image
+        template_path = os.path.join(STATIC_DIR, event["template_path"])
+        if not os.path.exists(template_path):
+            raise HTTPException(status_code=404, detail="Template image not found")
+        
+        template_img = Image.open(template_path)
+        
+        # Prepare certificates to insert
+        certificates_to_insert = []
+        skipped = 0
+        
+        for row in csv_reader:
+            name = row.get("name", "").strip()
+            email = row.get("email", "").strip().lower()
+            
+            if not name or not email:
+                skipped += 1
+                continue
+            
+            if email in existing_emails:
+                skipped += 1
+                continue
+            
+            # Generate certificate
+            cert_id = str(uuid.uuid4())
+            cert_filename = f"{cert_id}.png"
+            cert_path = os.path.join(CERTIFICATES_DIR, cert_filename)
+            
+            # Create certificate image
+            img = template_img.copy()
+            draw = ImageDraw.Draw(img)
+            
+            # Try to use a TrueType font, fallback to default
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", event["font_size"])
+            except:
+                font = ImageFont.load_default()
+            
+            # Draw text on certificate
+            text_color = event["font_color"]
+            draw.text(
+                (event["text_position_x"], event["text_position_y"]),
+                name,
+                fill=text_color,
+                font=font
+            )
+            
+            # Save certificate
+            img.save(cert_path, "PNG")
+            
+            # Create certificate document
+            certificate = {
+                "id": cert_id,
+                "event_id": event_id,
+                "name": name,
+                "email": email,
+                "certificate_path": f"certificates/{cert_filename}",
+                "created_at": datetime.utcnow().isoformat()
+            }
+            
+            certificates_to_insert.append(certificate)
+            existing_emails.add(email)
+        
+        # Bulk insert certificates
+        if certificates_to_insert:
+            database.certificates.insert_many(certificates_to_insert)
+        
+        return {
+            "message": f"Generated {len(certificates_to_insert)} certificates",
+            "generated": len(certificates_to_insert),
+            "skipped": skipped
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error generating certificates: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate certificates: {str(e)}")
+
+# Get certificates for an event
+@app.get("/api/events/{event_id}/certificates")
+async def get_certificates(event_id: str, limit: int = 100, database = Depends(get_db)):
+    try:
+        certificates = list(database.certificates.find(
+            {"event_id": event_id},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(limit))
+        
+        return certificates
+    except Exception as e:
+        print(f"Error fetching certificates: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch certificates")
+
+# Export certificates as CSV
+@app.get("/api/events/{event_id}/certificates/export")
+async def export_certificates(event_id: str, database = Depends(get_db)):
+    try:
+        certificates = list(database.certificates.find(
+            {"event_id": event_id},
+            {"_id": 0}
+        ).limit(10000))
+        
+        if not certificates:
+            raise HTTPException(status_code=404, detail="No certificates found")
+        
+        # Create CSV in memory
+        output = BytesIO()
+        output.write(b"name,email,certificate_id,created_at\n")
+        
+        for cert in certificates:
+            line = f"{cert['name']},{cert['email']},{cert['id']},{cert.get('created_at', '')}\n"
+            output.write(line.encode('utf-8'))
+        
+        output.seek(0)
+        
+        return StreamingResponse(
+            output,
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=certificates_{event_id}.csv"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error exporting certificates: {e}")
+        raise HTTPException(status_code=500, detail="Failed to export certificates")
+
+# Download certificate
+@app.post("/api/certificates/download")
+async def download_certificate(
+    event_slug: str = Form(...),
+    name: str = Form(...),
+    email: str = Form(...),
+    format: str = Form("png"),
+    database = Depends(get_db)
+):
+    try:
+        # Get event
+        event = database.events.find_one({"slug": event_slug}, {"_id": 0})
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        
+        # Find certificate
+        certificate = database.certificates.find_one(
+            {
+                "event_id": event["id"],
+                "name": {"$regex": f"^{re.escape(name)}$", "$options": "i"},
+                "email": email.lower()
+            },
+            {"_id": 0}
+        )
+        
+        if not certificate:
+            raise HTTPException(status_code=404, detail="Certificate not found")
+        
+        # Get certificate file path
+        cert_path = os.path.join(STATIC_DIR, certificate["certificate_path"])
+        
+        if not os.path.exists(cert_path):
+            raise HTTPException(status_code=404, detail="Certificate file not found")
+        
+        if format.lower() == "pdf":
+            # Convert PNG to PDF
+            pdf_output = BytesIO()
+            img = Image.open(cert_path)
+            
+            # Create PDF
+            img_width, img_height = img.size
+            c = canvas.Canvas(pdf_output, pagesize=(img_width, img_height))
+            c.drawImage(cert_path, 0, 0, width=img_width, height=img_height)
+            c.save()
+            
+            pdf_output.seek(0)
+            
+            return StreamingResponse(
+                pdf_output,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename=certificate_{certificate['id']}.pdf"}
+            )
+        else:
+            # Return PNG
+            return FileResponse(
+                cert_path,
+                media_type="image/png",
+                filename=f"certificate_{certificate['id']}.png"
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error downloading certificate: {e}")
+        raise HTTPException(status_code=500, detail="Failed to download certificate")
+
+# Verify certificate
+@app.get("/api/certificates/verify/{cert_id}")
+async def verify_certificate(cert_id: str, database = Depends(get_db)):
+    try:
+        certificate = database.certificates.find_one({"id": cert_id}, {"_id": 0})
+        
+        if certificate:
+            return {
+                "valid": True,
+                "name": certificate["name"],
+                "event_id": certificate["event_id"]
+            }
+        else:
+            return {
+                "valid": False,
+                "message": "Certificate not found"
+            }
+        
+    except Exception as e:
+        print(f"Error verifying certificate: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify certificate")
+
+# Dashboard statistics
+@app.get("/api/dashboard/stats")
+async def get_dashboard_stats(database = Depends(get_db)):
+    try:
+        # Count total events
+        total_events = database.events.count_documents({})
+        
+        # Count total certificates
+        total_certificates = database.certificates.count_documents({})
+        
+        # Get recent events
+        recent_events = list(database.events.find(
+            {},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(10))
+        
+        # Get certificate counts by event
+        pipeline = [
+            {"$group": {"_id": "$event_id", "count": {"$sum": 1}}},
+            {"$lookup": {
+                "from": "events",
+                "localField": "_id",
+                "foreignField": "id",
+                "as": "event_info"
+            }},
+            {"$unwind": "$event_info"},
+            {"$project": {
+                "event_id": "$_id",
+                "event_name": "$event_info.name",
+                "count": 1,
+                "_id": 0
+            }},
+            {"$sort": {"count": -1}},
+            {"$limit": 100}
+        ]
+        
+        certificates_by_event = list(database.certificates.aggregate(pipeline))
+        
+        return {
+            "totalEvents": total_events,
+            "totalCertificates": total_certificates,
+            "recentEvents": recent_events,
+            "certificatesByEvent": certificates_by_event
+        }
+        
+    except Exception as e:
+        print(f"Error fetching dashboard stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch dashboard stats")
+
 if __name__ == "__main__":
     import uvicorn
     print(f"🚀 FastAPI backend starting on port {PORT}")
