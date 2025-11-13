@@ -227,9 +227,10 @@ app.delete('/api/events/:eventId', async (req, res) => {
       fs.unlinkSync(templatePath);
     }
     
-    // Get all certificates for this event
+    // Get all certificates for this event (limit to prevent memory issues)
     const certificates = await db.collection('certificates')
       .find({ event_id: eventId })
+      .limit(10000)
       .toArray();
     
     // Delete certificate files
