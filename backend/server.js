@@ -265,7 +265,7 @@ app.get('/api/events/:eventId', checkDbConnection, async (req, res) => {
 });
 
 // Delete event
-app.delete('/api/events/:eventId', async (req, res) => {
+app.delete('/api/events/:eventId', checkDbConnection, async (req, res) => {
   try {
     const { eventId } = req.params;
     
