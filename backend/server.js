@@ -107,6 +107,11 @@ app.get('/api', (req, res) => {
   res.json({ message: 'Certificate Generator API - Node.js' });
 });
 
+// Health check endpoint for deployment
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'certificate-generator', timestamp: new Date().toISOString() });
+});
+
 // Create event
 app.post('/api/events', uploadTemplate.single('template'), async (req, res) => {
   try {
