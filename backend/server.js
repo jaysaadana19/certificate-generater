@@ -623,7 +623,7 @@ app.post('/api/certificates/download', checkDbConnection, async (req, res) => {
 });
 
 // Verify certificate by ID
-app.get('/api/certificates/verify/:certId', async (req, res) => {
+app.get('/api/certificates/verify/:certId', checkDbConnection, async (req, res) => {
   try {
     const { certId } = req.params;
     
