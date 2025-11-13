@@ -284,67 +284,119 @@ export default function AdminPage() {
 
                 {templatePreview && (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Sample Name Input */}
+                    <div className="space-y-2 bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-xl border-2 border-blue-200">
+                      <Label htmlFor="sampleName" className="font-semibold">Sample Name (for preview)</Label>
+                      <Input
+                        id="sampleName"
+                        data-testid="sample-name-input"
+                        placeholder="Enter sample name"
+                        value={sampleName}
+                        onChange={(e) => setSampleName(e.target.value)}
+                        className="border-blue-300 font-semibold text-lg"
+                      />
+                      <p className="text-xs text-blue-600">This text will appear on the preview to help you position it perfectly</p>
+                    </div>
+
+                    {/* Font Controls */}
+                    <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="fontSize">Font Size</Label>
-                        <Input
+                        <Label htmlFor="fontSize">Font Size: {fontSize}px</Label>
+                        <input
                           id="fontSize"
-                          data-testid="font-size-input"
+                          data-testid="font-size-slider"
+                          type="range"
+                          min="16"
+                          max="120"
+                          value={fontSize}
+                          onChange={(e) => setFontSize(parseInt(e.target.value))}
+                          className="w-full h-2 bg-cyan-200 rounded-lg appearance-none cursor-pointer accent-cyan-600"
+                        />
+                        <Input
                           type="number"
                           value={fontSize}
                           onChange={(e) => setFontSize(parseInt(e.target.value))}
                           className="border-gray-300"
+                          min="16"
+                          max="120"
                         />
                       </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="fontColor">Font Color</Label>
-                        <Input
-                          id="fontColor"
-                          data-testid="font-color-input"
-                          type="color"
-                          value={fontColor}
-                          onChange={(e) => setFontColor(e.target.value)}
-                          className="border-gray-300 h-10"
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            id="fontColor"
+                            data-testid="font-color-input"
+                            type="color"
+                            value={fontColor}
+                            onChange={(e) => setFontColor(e.target.value)}
+                            className="border-gray-300 h-12 cursor-pointer"
+                          />
+                          <Input
+                            type="text"
+                            value={fontColor}
+                            onChange={(e) => setFontColor(e.target.value)}
+                            className="border-gray-300 font-mono"
+                            placeholder="#000000"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="fontStyle">Font Style</Label>
+                        <select
+                          id="fontStyle"
+                          data-testid="font-style-select"
+                          value={fontStyle}
+                          onChange={(e) => setFontStyle(e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg p-2 h-12"
+                        >
+                          <option value="normal">Normal</option>
+                          <option value="bold">Bold</option>
+                          <option value="italic">Italic</option>
+                        </select>
                       </div>
                     </div>
 
+                    {/* Live Preview */}
                     <div className="space-y-2">
-                      <Label>Text Position</Label>
-                      <Button
-                        data-testid="select-position-btn"
-                        onClick={() => setShowPositionPicker(!showPositionPicker)}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <MousePointer className="w-4 h-4 mr-2" />
-                        {textPosition.x > 0 ? `Position: (${textPosition.x}, ${textPosition.y})` : 'Click to Select Position'}
-                      </Button>
-                    </div>
-
-                    {showPositionPicker && (
-                      <div className="border-4 border-blue-500 rounded-lg p-2 bg-white">
-                        <p className="text-sm text-blue-600 mb-2 font-semibold">Click on the template where you want the name to appear:</p>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-lg font-semibold">Live Preview</Label>
+                        {textPosition.x > 0 && (
+                          <span className="text-sm text-green-600 font-semibold bg-green-50 px-3 py-1 rounded-full">
+                            ✓ Position Set: ({textPosition.x}, {textPosition.y})
+                          </span>
+                        )}
+                      </div>
+                      <div className="border-4 border-cyan-500 rounded-lg p-4 bg-white shadow-xl">
+                        <p className="text-sm text-cyan-700 mb-3 font-semibold flex items-center gap-2">
+                          <MousePointer className="w-4 h-4" />
+                          Click on the certificate where you want "{sampleName}" to appear
+                        </p>
                         <div className="relative inline-block">
                           <img
                             ref={imageRef}
                             src={templatePreview}
                             alt="Template"
-                            className="max-w-full h-auto cursor-crosshair rounded"
-                            onClick={handleCanvasClick}
+                            className="hidden"
+                            onLoad={drawPreview}
                           />
-                          {textPosition.x > 0 && (
-                            <div
-                              className="absolute w-3 h-3 bg-red-500 rounded-full transform -translate-x-1/2 -translate-y-1/2"
-                              style={{
-                                left: `${(textPosition.x / imageRef.current.naturalWidth) * 100}%`,
-                                top: `${(textPosition.y / imageRef.current.naturalHeight) * 100}%`
-                              }}
-                            />
-                          )}
+                          <canvas
+                            ref={canvasRef}
+                            onClick={handleCanvasClick}
+                            className="max-w-full h-auto cursor-crosshair rounded shadow-lg"
+                            style={{ maxHeight: '600px' }}
+                          />
+                        </div>
+                        <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span>= Text position marker</span>
+                          </div>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 )}
 
