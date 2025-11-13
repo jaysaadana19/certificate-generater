@@ -43,9 +43,17 @@ export default function AdminPage() {
   useEffect(() => {
     localStorage.setItem('certificateFormData', JSON.stringify({
       fontSize,
-      fontColor
+      fontColor,
+      fontStyle
     }));
-  }, [fontSize, fontColor]);
+  }, [fontSize, fontColor, fontStyle]);
+
+  // Redraw preview when settings change
+  useEffect(() => {
+    if (templatePreview && imageRef.current) {
+      drawPreview();
+    }
+  }, [fontSize, fontColor, fontStyle, textPosition, sampleName, templatePreview]);
   
   // CSV upload
   const [csvFile, setCsvFile] = useState(null);
