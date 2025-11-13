@@ -149,7 +149,16 @@ app.get('/api', (req, res) => {
 
 // Health check endpoint for deployment
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', service: 'certificate-generator', timestamp: new Date().toISOString() });
+  const health = {
+    status: db ? 'ok' : 'degraded',
+    service: 'certificate-generator',
+    database: db ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString()
+  };
+  
+  // Return 200 even if DB is not connected yet (allows pod to start)
+  // But indicate degraded status in the response
+  res.status(200).json(health);
 });
 
 // Create event
