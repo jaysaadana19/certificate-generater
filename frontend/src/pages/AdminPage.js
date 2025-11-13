@@ -35,7 +35,9 @@ export default function AdminPage() {
   const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
   const [fontSize, setFontSize] = useState(savedData.fontSize);
   const [fontColor, setFontColor] = useState(savedData.fontColor);
+  const [fontStyle, setFontStyle] = useState('normal');
   const [showPositionPicker, setShowPositionPicker] = useState(false);
+  const [sampleName, setSampleName] = useState('John Doe');
   
   // Save form data to localStorage whenever it changes
   useEffect(() => {
