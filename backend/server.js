@@ -79,18 +79,58 @@ const uploadCSV = multer({
 
 // MongoDB connection
 let db;
+let mongoClient;
 const mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017';
 const dbName = process.env.DB_NAME || 'test_database';
 
-MongoClient.connect(mongoUrl)
-  .then(client => {
-    console.log('Connected to MongoDB');
-    db = client.db(dbName);
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
+// Middleware to check if database is connected
+function checkDbConnection(req, res, next) {
+  if (!db) {
+    return res.status(503).json({ error: 'Database not connected yet. Please try again.' });
+  }
+  next();
+}
+
+async function connectToMongoDB() {
+  try {
+    console.log('Attempting to connect to MongoDB...');
+    mongoClient = await MongoClient.connect(mongoUrl, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+    });
+    db = mongoClient.db(dbName);
+    console.log('✅ Connected to MongoDB successfully');
+    return true;
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+    console.log('Will retry connection in 5 seconds...');
+    return false;
+  }
+}
+
+// Retry logic for MongoDB connection
+async function initializeMongoDB() {
+  let connected = await connectToMongoDB();
+  let retries = 0;
+  const maxRetries = 10;
+  
+  while (!connected && retries < maxRetries) {
+    retries++;
+    console.log(`Retry attempt ${retries}/${maxRetries}...`);
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    connected = await connectToMongoDB();
+  }
+  
+  if (!connected) {
+    console.error('Failed to connect to MongoDB after multiple attempts');
+    console.log('Server will start but database operations will fail until connection is established');
+  }
+  
+  return connected;
+}
+
+// Initialize MongoDB connection
+initializeMongoDB();
 
 // Helper function to create slug
 function createSlug(name) {
